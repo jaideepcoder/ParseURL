@@ -4,6 +4,7 @@ from URL import *
 class ParseURL(object):
     def __init__(self, url):
         self.url = url
+        self.url_string = url
         self.parsed_url = URL()
 
     def parse_scheme(self, url):
@@ -42,18 +43,11 @@ class ParseURL(object):
             return dict()
         end_ind = url.find('#')
         if end_ind == -1:
-            query = dict()
-            for raw_query in url[start_ind+1:].split('&'):
-                raw_query = raw_query.split('=')
-                query[raw_query[0]] = raw_query[1]
-            self.url = url.replace(url[start_ind:], '')
+            query_string = url[start_ind+1:]
         else:
-            query = dict()
-            for raw_query in url[start_ind+1:end_ind].split('&'):
-                raw_query = raw_query.split('=')
-                query[raw_query[0]] = raw_query[1]
-            self.url = url.replace(url[start_ind:end_ind], '')
-        return query
+            query_string = url[start_ind+1:end_ind]
+        self.url = url.replace('?' + query_string, '')
+        return self.query_parse(query_string)
 
     def parse_fragment(self, url):
         ind = url.find('#')
@@ -125,3 +119,72 @@ class ParseURL(object):
         print self.parsed_url
         # print self.url
         return
+
+    def get_url(self):
+        return self.url_string
+
+    def url_join(self, url, str):
+        raise NotImplemented
+
+    def url_defrag(self):
+        raise NotImplemented
+
+    def url_unparse(self, parsed_url):
+        url = ''
+        if type(parsed_url) is URL:
+            scheme = parsed_url.get_attr('scheme')
+            if scheme != '':
+                url = url + scheme + '://'
+            username = parsed_url.get_attr('username')
+            if username is not None:
+                url = url + username
+            password = parsed_url.get_attr('password')
+            if password is not None:
+                url = url + ':' + password + '@'
+            netloc = parsed_url.get_attr('netloc')
+            url = url + netloc
+            port = parsed_url.get_attr('port')
+            if port != '':
+                url = url + ':' + port
+            path = parsed_url.get_attr('path')
+            if path != '':
+                url = url + path
+            query = self.query_unparse(parsed_url.get_attr('query'))
+            if len(query) != 0:
+                url = url + '?' + query
+            fragment = parsed_url.get_attr('fragment')
+            if fragment != '':
+                url = url + '#' + fragment
+            return url
+        elif type(parsed_url) is dict:
+            if parsed_url['scheme'] != '':
+                url = url + parsed_url['scheme'] + '://'
+            if parsed_url['username'] is not None:
+                url = url + parsed_url['username']
+            if parsed_url['password'] is not None:
+                url = url + ':' + parsed_url['password'] + '@'
+            url = url + parsed_url['netloc']
+            if parsed_url['port'] != '':
+                url = url + ':' + parsed_url['port']
+            if parsed_url['path'] != '':
+                url = url + parsed_url['path']
+            query = self.query_unparse(parsed_url['query'])
+            if len(query) != 0:
+                url = url + '?' + query
+            if parsed_url['fragment'] != '':
+                url = url + '#' + parsed_url['fragment']
+            return url
+
+    def query_unparse(self, query):
+        output = ''
+        for key in query:
+            output = output + key + '=' + query[key] + '&'
+        output = output[:-1]
+        return output
+
+    def query_parse(self, query_string):
+        query = dict()
+        for raw_query in query_string.split('&'):
+            raw_query = raw_query.split('=')
+            query[raw_query[0]] = raw_query[1]
+        return query

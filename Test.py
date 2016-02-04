@@ -5,11 +5,12 @@ from ParseURL import *
 class TestParsing(unittest.TestCase):
 
     def test_url1(self):
-        url = 'https://www.google.com:80/login?username=johndoe&password=nanananananananabatman'
+        url = 'https://www.google.com:80/login?username=johndoe&password=nanananabatman'
         parser = ParseURL(url)
         parser.parse()
         self.assertEqual(parser.parsed_url.get_attr('scheme'), "https")
-        self.assertEqual(parser.parsed_url.get_attr('query'), {'username': 'johndoe', 'password': 'nanananananananabatman'})
+        self.assertEqual(parser.parsed_url.get_attr('query'), {'username': 'johndoe', 'password': 'nanananabatman'})
+        self.assertEqual(parser.parsed_url.get_attr('path'), "/login")
         self.assertEqual(parser.parsed_url.get_attr('fragment'), "")
 
     def test_url2(self):
@@ -53,6 +54,19 @@ class TestParsing(unittest.TestCase):
         self.assertEqual(parser.parsed_url.get_attr('username'), "username")
         self.assertEqual(parser.parsed_url.get_attr('password'), "password")
 
+    def test_url7(self):
+        url = 'https://github.com/jaideepcoder/ParseURL'
+        parser = ParseURL(url)
+        parser.parse()
+        self.assertEqual(parser.parsed_url.get_attr('scheme'), "https")
+        self.assertEqual(parser.parsed_url.get_attr('netloc'), "github.com")
+        self.assertEqual(parser.parsed_url.get_attr('path'), "/jaideepcoder/ParseURL")
+
+    def test_unparse(self):
+        url = 'https://github.com/jaideepcoder/ParseURL'
+        parser = ParseURL(url)
+        parser.parse()
+        self.assertEqual(parser.url_unparse(parser.parsed_url), 'https://github.com/jaideepcoder/ParseURL')
 
 if "__name__" == "__main__":
     unittest.main()
