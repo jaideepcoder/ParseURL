@@ -116,7 +116,7 @@ class ParseURL(object):
         self.parsed_url.set_attr('port', self.parse_port(self.url))
         self.parsed_url.set_attr('hostname', self.parse_hostname(self.url))
         self.parsed_url.set_attr('netloc', self.parse_netloc(self.url))
-        print self.parsed_url
+        print(self.parsed_url)
         # print self.url
         return
 
