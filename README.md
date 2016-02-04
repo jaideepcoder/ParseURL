@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/jaideepcoder/ParseURL.svg?branch=master)](https://travis-ci.org/jaideepcoder/ParseURL)
+
 # ParseURL
 This is a small project to emulate the existing urllib.urlparse() module.
 
