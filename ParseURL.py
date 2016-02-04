@@ -1,4 +1,4 @@
-from URL import *
+from URL import URL
 
 
 class ParseURL(object):

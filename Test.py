@@ -1,5 +1,5 @@
 import unittest
-from ParseURL import *
+from ParseURL import ParseURL
 
 
 class TestParsing(unittest.TestCase):
