@@ -61,7 +61,7 @@ class URL(object):
 
     def __repr__(self):
         return 'ParseURL(scheme="{0}", netloc="{1}", path="{2}", params="{3}", query="{4}", fragment="{5}",' \
-               ' username="{6}",password="{7}", hostname="{8}", port={9})'.format(self.scheme, self.netloc, self.path,
+               ' username="{6}",password="{7}", hostname="{8}", port="{9}")'.format(self.scheme, self.netloc, self.path,
                                                                                   self.params, self.query, self.fragment,
                                                                                   self.username, self.password,
                                                                                   self.hostname, self.port)
