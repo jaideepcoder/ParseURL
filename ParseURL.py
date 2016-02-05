@@ -2,32 +2,30 @@ from URL import URL
 
 
 class ParseURL(object):
+    """A python module to parse url emulates urllib.urlparse()."""
     def __init__(self, url):
         self.url = url
         self.url_string = url
         self.parsed_url = URL()
+        self.parse()
 
     def parse_scheme(self, url):
-        scheme = ""
-        for char in url:
-            if char == '.':
-                scheme = ""
-                break
-            elif char == ':':
-                break
-            else: scheme = scheme + char
-        # if url[0] == '/':
-        #     scheme = 'http'
-        if scheme != "":
-            # Removing explicitly typed scheme from the URI to handle special schemes like URN
-            self.url = url[len(scheme)+3:]
+        """A method to parse the url scheme."""
+        dot_ind = url.find('.')
+        col_ind = url.find(':')
+        scheme = ''
+        if col_ind < dot_ind and col_ind != -1:
+            scheme = url[:col_ind]
+        self.url = url[col_ind+3:]
         return scheme.lower()
 
     def parse_netloc(self, url):
+        """A method to parse the url netloc."""
         self.url = ''
         return url
 
     def parse_path(self, url):
+        """A method to parse the url path."""
         ind = url.find('/')
         if ind != -1:
             self.url = url.replace(url[ind:], '')
@@ -38,6 +36,7 @@ class ParseURL(object):
         raise NotImplemented
 
     def parse_query(self, url):
+        """A method to parse the url query."""
         start_ind = url.find('?')
         if start_ind == -1:
             return dict()
@@ -50,6 +49,7 @@ class ParseURL(object):
         return self.query_parse(query_string)
 
     def parse_fragment(self, url):
+        """A method to parse the url fragment."""
         ind = url.find('#')
         if ind != -1:
             self.url = url[:ind]
@@ -57,6 +57,7 @@ class ParseURL(object):
         return ''
 
     def parse_username(self, url):
+        """A method to parse the url username."""
         if '@' in url: at_char = '@'
         elif '%40' in url: at_char = '%40'
         else: at_char = None
@@ -71,6 +72,7 @@ class ParseURL(object):
             return url[0]
 
     def parse_password(self, url):
+        """A method to parse the url password."""
         if '@' in url: at_char = '@'
         elif '%40' in url: at_char = '%40'
         else: at_char = None
@@ -86,26 +88,27 @@ class ParseURL(object):
             return url[1]
 
     def parse_hostname(self, url):
+        """A method to parse the url hostname."""
         if 'www.' in url:
             # self.url = url.replace('www.', '')
             return self.url.replace('www.', '')
 
     def parse_port(self, url):
+        """A method to parse the url port."""
         port = ""
         if self.parsed_url.get_attr('scheme').lower() != 'urn':
             if ':' in url:
-                for char in url[::-1]:
-                    if char != ":":
-                        if not char.isdigit():
-                            break
-                        port = char + port
-                    else: break
+                col_id = url.find(':')
+                if url[-1].isdigit():
+                    port = url[col_id+1:]
                 self.url = url.replace(':'+port, '')
-                if port != '':
-                    port = int(port)
-        return port
+        if port == '':
+            return port
+        return int(port)
 
     def parse(self):
+        """A method to parse the url. It is called from the class constructor."""
+        url = self.url
         self.parsed_url.set_attr('scheme', self.parse_scheme(self.url))
         # self.parsed_url.set_attr('params', self.parse_params(self.url))
         self.parsed_url.set_attr('fragment', self.parse_fragment(self.url))
@@ -114,13 +117,14 @@ class ParseURL(object):
         self.parsed_url.set_attr('username', self.parse_username(self.url))
         self.parsed_url.set_attr('password', self.parse_password(self.url))
         self.parsed_url.set_attr('port', self.parse_port(self.url))
-        self.parsed_url.set_attr('hostname', self.parse_hostname(self.url))
+        # self.parsed_url.set_attr('hostname', self.parse_hostname(self.url))
         self.parsed_url.set_attr('netloc', self.parse_netloc(self.url))
-        print(self.parsed_url)
+        # print(self.parsed_url)
         # print self.url
         return
 
     def get_url(self):
+        """Getter method to retrieve url string."""
         return self.url_string
 
     def url_join(self, url, str):
@@ -129,33 +133,35 @@ class ParseURL(object):
     def url_defrag(self):
         raise NotImplemented
 
-    def url_unparse(self, parsed_url):
-        url = ''
+    def url_unparse(self, parsed_url=None):
+        """A method to reconstruct the url string from the parsed url."""
+        if parsed_url is None: parsed_url = self.parsed_url
+        url = list()
         if type(parsed_url) is URL:
             scheme = parsed_url.get_attr('scheme')
             if scheme != '':
-                url = url + scheme + '://'
+                url.extend([scheme,'://'])
             username = parsed_url.get_attr('username')
             if username is not None:
-                url = url + username
+                url.append(username)
             password = parsed_url.get_attr('password')
             if password is not None:
-                url = url + ':' + password + '@'
+                url.extend([':', password, '@'])
             netloc = parsed_url.get_attr('netloc')
-            url = url + netloc
+            url.append(netloc)
             port = parsed_url.get_attr('port')
             if port != '':
-                url = url + ':' + port
+                url.extend([':', port])
             path = parsed_url.get_attr('path')
             if path != '':
-                url = url + path
+                url.append(path)
             query = self.query_unparse(parsed_url.get_attr('query'))
             if len(query) != 0:
-                url = url + '?' + query
+                url.extend(['?', query])
             fragment = parsed_url.get_attr('fragment')
             if fragment != '':
-                url = url + '#' + fragment
-            return url
+                url.extend(['#', fragment])
+            return ''.join(url)
         elif type(parsed_url) is dict:
             if parsed_url['scheme'] != '':
                 url = url + parsed_url['scheme'] + '://'
@@ -188,3 +194,12 @@ class ParseURL(object):
             raw_query = raw_query.split('=')
             query[raw_query[0]] = raw_query[1]
         return query
+
+    def update_query(self, query):
+        """Method to update the query in the parsed url."""
+        if type(query) == dict:
+            self.parsed_url.set_attr('query', query)
+        else:
+            self.parsed_url.set_attr('query', self.query_parse(query))
+
+# help(ParseURL)
